@@ -2,7 +2,7 @@
 ## **Prerequisites**
 
 - .NET installed => https://dotnet.microsoft.com/download
-- Visual Studio Code
+- VS Code IDE
 - Internet connection to access the API: `https://api.restful-api.dev`
 - Recommended VS Code extensions:
   - C# Dev Kit (by Microsoft) - Install this under vs code extensions 
