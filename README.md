@@ -1,7 +1,7 @@
 
 ## **Prerequisites**
 
-- .NET 7.0 SDK or later installed ([Download](https://dotnet.microsoft.com/en-us/download))
+- .NET installed
 - Visual Studio Code
 - Internet connection to access the API: `https://api.restful-api.dev`
 - Recommended VS Code extensions:
@@ -33,10 +33,15 @@ The `_createdObjectId` variable is used to share the object ID between tests.
 ---
 ## **How to Run Tests in VS Code**
 
-### **Step 1: Build the Project**
+### **Step 1: Clone the project**
+Clone the project 
+git clone https://github.com/Akila-Rathnayake/ApiAssignment.git
+
+### **Step 2: Build the Project**
 
 Open the project folder in VS Code, then open the terminal (`Ctrl + ~`) and run: 
 dotnet build
 
+### **Step 3: Run the Project**
 After the build is successful, run all tests: 
 dotnet test
