@@ -1,4 +1,3 @@
-﻿
 using Newtonsoft.Json.Linq;
 using RestSharp;
 
@@ -15,23 +14,7 @@ namespace ApiAssignment
             _client = new RestClient("https://api.restful-api.dev");
         }
 
-        // Helper to read a value from the "data" object using multiple possible key names
-        private static string? GetDataValue(JObject? dataObj, params string[] possibleKeys)
-        {
-            if (dataObj == null) return null;
-            foreach (var key in possibleKeys)
-            {
-                if (dataObj.TryGetValue(key, out var token) && token != null)
-                    return token.ToString();
-            }
-            // fallback: try a case-insensitive match ignoring spaces/underscores
-            var normalized = dataObj.Properties()
-                                    .Select(p => new { Name = p.Name, Norm = p.Name.Replace(" ", "").Replace("_", "").ToLower(), Value = p.Value })
-                                    .FirstOrDefault(p => possibleKeys.Any(k => k.Replace(" ", "").Replace("_", "").ToLower() == p.Norm));
-            return normalized?.Value.ToString();
-        }
-
-        [Fact(DisplayName = "1) Get list of all objects"),TestPriority(1)]
+        [Fact(DisplayName = "1) Get list of all objects"), TestPriority(1)]
         public async Task Get_All_Objects_ShouldReturnList()
         {
             var request = new RestRequest("/objects", Method.Get);
@@ -65,12 +48,12 @@ namespace ApiAssignment
             request.AddJsonBody(new
             {
                 name = "Apple MacBook Pro 16",
-                data = new
+                data = new Dictionary<string, object>
                 {
-                    year = 2019,
-                    price = 1849.99,
-                    CPU_model = "Intel Core i9",      // kept as-is to avoid big structural change
-                    Hard_disk_size = "1 TB"
+                    { "year", 2019 },
+                    { "price", 1849.99 },
+                    { "CPU model", "Intel Core i9" },
+                    { "Hard disk size", "1 TB" }
                 }
             });
 
@@ -83,27 +66,16 @@ namespace ApiAssignment
             Assert.NotNull(json["id"]);
             _createdObjectId = json["id"]!.ToString();
 
-            // Basic checks
+            // Validate exact values
             Assert.Equal("Apple MacBook Pro 16", json["name"]);
-
-            // Robust checks for fields in returned data:
             var data = json["data"] as JObject;
-            // Accept either "CPU model" or "CPU_model" (or other minor variations)
-            var cpuVal = GetDataValue(data, "CPU model", "CPU_model", "CPU model");
-            Assert.Equal("Intel Core i9", cpuVal);
-
-            var yearVal = GetDataValue(data, "year");
-            Assert.Equal("2019", yearVal);
-
-            var priceVal = GetDataValue(data, "price");
-            // price may be returned as number or string; compare normalized string
-            Assert.Equal("1849.99", priceVal?.ToString());
-
-            var hddVal = GetDataValue(data, "Hard disk size", "Hard_disk_size");
-            Assert.Equal("1 TB", hddVal);
+            Assert.Equal("Intel Core i9", data?["CPU model"]?.ToString());
+            Assert.Equal("1 TB", data?["Hard disk size"]?.ToString());
+            Assert.Equal("2019", data?["year"]?.ToString());
+            Assert.Equal("1849.99", data?["price"]?.ToString());
         }
 
-        [Fact(DisplayName = "3) Get single object by ID") , TestPriority(3)]
+        [Fact(DisplayName = "3) Get single object by ID"), TestPriority(3)]
         public async Task Get_Object_By_Id_ShouldReturnCorrectObject()
         {
             Assert.False(string.IsNullOrEmpty(_createdObjectId), "Object ID was not created");
@@ -119,15 +91,10 @@ namespace ApiAssignment
             Assert.Equal("Apple MacBook Pro 16", json["name"]);
 
             var data = json["data"] as JObject;
-            var yearVal = GetDataValue(data, "year");
-            Assert.Equal("2019", yearVal);
-
-            var priceVal = GetDataValue(data, "price");
-            Assert.Equal("1849.99", priceVal);
-
-            // Check CPU model robustly (accept "CPU model" or "CPU_model")
-            var cpuVal = GetDataValue(data, "CPU model", "CPU_model");
-            Assert.Equal("Intel Core i9", cpuVal);
+            Assert.Equal("Intel Core i9", data?["CPU model"]?.ToString());
+            Assert.Equal("1 TB", data?["Hard disk size"]?.ToString());
+            Assert.Equal("2019", data?["year"]?.ToString());
+            Assert.Equal("1849.99", data?["price"]?.ToString());
         }
 
         [Fact(DisplayName = "4) Update the object using PUT"), TestPriority(4)]
@@ -139,13 +106,13 @@ namespace ApiAssignment
             request.AddJsonBody(new
             {
                 name = "Apple MacBook Pro 16",
-                data = new
+                data = new Dictionary<string, object>
                 {
-                    year = 2019,
-                    price = 2049.99,
-                    CPU_model = "Intel Core i9",
-                    Hard_disk_size = "1 TB",
-                    color = "silver"
+                    { "year", 2019 },
+                    { "price", 2049.99 },
+                    { "CPU model", "Intel Core i9" },
+                    { "Hard disk size", "1 TB" },
+                    { "color", "silver" }
                 }
             });
 
@@ -156,16 +123,13 @@ namespace ApiAssignment
 
             var json = JObject.Parse(response.Content!);
             Assert.Equal("Apple MacBook Pro 16", json["name"]);
+
             var data = json["data"] as JObject;
-
-            var colorVal = GetDataValue(data, "color");
-            Assert.Equal("silver", colorVal);
-
-            var priceVal = GetDataValue(data, "price");
-            Assert.Equal("2049.99", priceVal);
-
-            var yearVal = GetDataValue(data, "year");
-            Assert.Equal("2019", yearVal);
+            Assert.Equal("Intel Core i9", data?["CPU model"]?.ToString());
+            Assert.Equal("1 TB", data?["Hard disk size"]?.ToString());
+            Assert.Equal("2019", data?["year"]?.ToString());
+            Assert.Equal("2049.99", data?["price"]?.ToString());
+            Assert.Equal("silver", data?["color"]?.ToString());
         }
 
         [Fact(DisplayName = "5) Delete the object using DELETE"), TestPriority(5)]
